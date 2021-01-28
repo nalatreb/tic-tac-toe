@@ -93,8 +93,6 @@ function emptySquares() {
 }
 
 function bestSpot() {
-    let spot = minimax(origBoard, aiPlayer, 0);
-    return spot.index;
     return minimax(origBoard, aiPlayer, 0).index;
 }
 
