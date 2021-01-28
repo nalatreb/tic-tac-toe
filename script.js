@@ -28,21 +28,28 @@ function startGame() {
 }
 
 function turnClick(event) {
-    if (typeof origBoard[event.target.id] === 'number') {
-        turn(event.target.id, huPlayer);
-        if (!checkTie()) {
-            turn(bestSpot(), aiPlayer);
-        }
+    if (typeof origBoard[event.target.id] !== 'number') {
+        return;
+    }
+
+    turn(event.target.id, huPlayer);
+    let gameWon = checkWin(origBoard, huPlayer);
+    if (gameWon) {
+        return gameOver(gameWon);
+    }
+    if (checkTie()) {
+        return declareWinner('Tie Game!');
+    }
+    turn(bestSpot(), aiPlayer);
+    gameWon = checkWin(origBoard, aiPlayer);
+    if (gameWon) {
+        return gameOver(gameWon);
     }
 }
 
 function turn(squareId, player) {
     origBoard[squareId] = player;
     document.getElementById(squareId).innerText = player;
-    let gameWon = checkWin(origBoard, player);
-    if (gameWon) {
-        gameOver(gameWon);
-    }
 }
 
 function checkWin(board, player) {
@@ -86,7 +93,9 @@ function emptySquares() {
 }
 
 function bestSpot() {
-    return minimax(origBoard, aiPlayer).index;
+    let spot = minimax(origBoard, aiPlayer, 0);
+    return spot.index;
+    return minimax(origBoard, aiPlayer, 0).index;
 }
 
 function checkTie() {
@@ -95,7 +104,6 @@ function checkTie() {
             cells[i].style.backgroundColor = 'green';
             cells[i].removeEventListener('click', turnClick, false);
         }
-        declareWinner('Tie Game!');
 
         return true;
     }
@@ -103,20 +111,23 @@ function checkTie() {
     return false;
 }
 
-function minimax(newBoard, player) {
+function minimax(newBoard, player, deepness) {
     let availableSpots = emptySquares(newBoard);
 
-    if (checkWin(newBoard, player)) {
+    if (checkWin(newBoard, huPlayer)) {
         return {
-            score: -10
+            score: -10,
+            deepness
         };
     } else if (checkWin(newBoard, aiPlayer)) {
         return {
-            score: 20
+            score: 20,
+            deepness
         };
     } else if (availableSpots.length === 0) {
         return {
-            score: 0
+            score: 0,
+            deepness
         };
     }
 
@@ -126,13 +137,16 @@ function minimax(newBoard, player) {
         move.index = newBoard[availableSpots[i]];
         newBoard[availableSpots[i]] = player;
 
+        deepness++;
+        let result;
         if (player === aiPlayer) {
-            let result = minimax(newBoard, huPlayer);
-            move.score = result.score;
+            result = minimax(newBoard, huPlayer, deepness);
         } else {
-            let result = minimax(newBoard, aiPlayer);
-            move.score = result.score;
+            result = minimax(newBoard, aiPlayer, deepness);
         }
+        deepness--;
+        move.score = result.score;
+        move.deepness = result.deepness;
 
         newBoard[availableSpots[i]] = move.index;
 
@@ -142,10 +156,18 @@ function minimax(newBoard, player) {
     let bestMove;
     if (player === aiPlayer) {
         let bestScore = -10000;
+        let bestDeep = 1000;
         for (let i = 0; i < moves.length; i++) {
             if (moves[i].score > bestScore) {
                 bestScore = moves[i].score;
                 bestMove = i;
+                bestDeep = moves[i].deepness;
+            }
+
+            if (moves[i].score === bestScore && moves[i].deepness < bestDeep) {
+                bestScore = moves[i].score;
+                bestMove = i;
+                bestDeep = moves[i].deepness;
             }
         }
     } else {
