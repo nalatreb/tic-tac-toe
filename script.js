@@ -114,18 +114,15 @@ function minimax(newBoard, player, deepness) {
 
     if (checkWin(newBoard, huPlayer)) {
         return {
-            score: -10,
-            deepness
+            score: -10 + deepness,
         };
     } else if (checkWin(newBoard, aiPlayer)) {
         return {
-            score: 20,
-            deepness
+            score: 20 - deepness,
         };
     } else if (availableSpots.length === 0) {
         return {
             score: 0,
-            deepness
         };
     }
 
@@ -144,7 +141,6 @@ function minimax(newBoard, player, deepness) {
         }
         deepness--;
         move.score = result.score;
-        move.deepness = result.deepness;
 
         newBoard[availableSpots[i]] = move.index;
 
@@ -154,18 +150,10 @@ function minimax(newBoard, player, deepness) {
     let bestMove;
     if (player === aiPlayer) {
         let bestScore = -10000;
-        let bestDeep = 1000;
         for (let i = 0; i < moves.length; i++) {
             if (moves[i].score > bestScore) {
                 bestScore = moves[i].score;
                 bestMove = i;
-                bestDeep = moves[i].deepness;
-            }
-
-            if (moves[i].score === bestScore && moves[i].deepness < bestDeep) {
-                bestScore = moves[i].score;
-                bestMove = i;
-                bestDeep = moves[i].deepness;
             }
         }
     } else {
