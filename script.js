@@ -118,7 +118,7 @@ function minimax(newBoard, player, deepness) {
         };
     } else if (checkWin(newBoard, aiPlayer)) {
         return {
-            score: 20 - deepness,
+            score: 10 - deepness,
         };
     } else if (availableSpots.length === 0) {
         return {
